@@ -1,18 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:orientation="vertical"
+    android:background="@color/Background">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginTop="90dp"
+        android:text="Server File Handler"
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:textSize="25sp"/>
 
-</android.support.constraint.ConstraintLayout>
+
+    <EditText
+        android:id="@+id/LinkEditMain"
+        android:layout_width="match_parent"
+        android:layout_marginTop="60dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:padding="10dp"
+        android:textSize="20sp"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@android:color/white"
+        android:textColorHint="@android:color/darker_gray"
+        android:hint="Server number"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/ConnectMain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:text="Connect"
+        android:layout_marginTop="50dp"/>
+
+</LinearLayout>

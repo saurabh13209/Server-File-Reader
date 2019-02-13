@@ -1,6 +1,6 @@
 <?php
 //$dir = $_GET["path"];
-$dir = "../../../home/saurabh/";
+$dir = $_POST['link'];
 $a = scandir($dir);
 $i=2;
 $arrayMain = array();

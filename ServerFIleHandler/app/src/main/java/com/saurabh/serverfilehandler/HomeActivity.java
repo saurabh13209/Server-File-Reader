@@ -3,120 +3,153 @@ package com.saurabh.serverfilehandler;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.saurabh.volleyhelper.GetRequest;
-import com.saurabh.volleyhelper.PostRequest;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+
 
 public class HomeActivity extends AppCompatActivity {
-    String mainLink;
-    String homeLink;
     ListView listView;
     ArrayList FolderList;
     ArrayList dirList;
     ProgressBar progressBar;
+    Toolbar toolbar;
+    String serverLink;
+    public static boolean isIpChanged = false;
+
+    @Override
+    protected void onResume() {
+        if (isIpChanged) {
+            serverLink = "http://" + SharedDataHolder.getIp(HomeActivity.this);
+            isIpChanged = false;
+            setClickFunction();
+        }
+        super.onResume();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        mainLink = SharedDataHolder.getLink(HomeActivity.this);
-        mainLink = "http://" + mainLink + ".ngrok.io/index.php";
-        homeLink = "/home/saurabh/";
+
         listView = findViewById(R.id.HomeList);
         FolderList = new ArrayList();
         dirList = new ArrayList();
         progressBar = findViewById(R.id.progressHome);
-        setClickFunction();
-    }
+        toolbar = findViewById(R.id.HomeTool);
+        setSupportActionBar(toolbar);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
 
-    void formPath() {
-        homeLink = "/home/saurabh/";
-        for (int i = 0; i < dirList.size(); i++) {
-            homeLink = homeLink + dirList.get(i).toString() + "/";
-        }
+        serverLink = "http://" + SharedDataHolder.getIp(HomeActivity.this);
+        setClickFunction();
     }
 
     @Override
-    public void onBackPressed() {
-        dirList.remove(dirList.size() - 1);
-        formPath();
-        setClickFunction();
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.CreateFile:
+                break;
+            case R.id.Setting:
+                startActivity(new Intent(HomeActivity.this, SettingActivity.class));
+                break;
+            case R.id.CraeteFolder:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     void setClickFunction() {
         listView.setVisibility(View.INVISIBLE);
         progressBar.setVisibility(View.VISIBLE);
 
-        new PostRequest() {
+        Log.v("TAG", formPath());
+        new GetRequest() {
             @Override
             public void getResponse(String res) {
+                listView.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.INVISIBLE);
+
+                FolderList = new ArrayList();
+
                 try {
-                    FolderList = new ArrayList();
-                    listView.setVisibility(View.VISIBLE);
-                    progressBar.setVisibility(View.INVISIBLE);
                     JSONArray jsonArray = new JSONArray(res);
+
                     for (int i = 0; i < jsonArray.length(); i++) {
                         FolderList.add(jsonArray.getString(i));
                     }
+
                     CustomAdapter customAdapter = new CustomAdapter(FolderList, getLayoutInflater(), HomeActivity.this) {
                         @Override
                         void OnClick(String data) {
-                            for (int i=0 ; i<dirList.size() ; i++){
-                                Log.v("TAG","PLACE :"+dirList.get(i));
-                            }
-                            if (data.endsWith(".txt") || data.endsWith(".pdf") || data.endsWith(".py")) {
-                                String DL = new String();
-                                for (int i=0 ; i<dirList.size() ; i++){
-                                    Log.v("TAG","dir :"+dirList.get(i));
-                                    DL = DL+"/"+dirList.get(i).toString();
+
+                            if (data.contains(".")) {
+                                String localData = serverLink;
+                                for (int i = 0; i < dirList.size(); i++) {
+                                    localData = localData + "/" + dirList.get(i);
                                 }
-                                DL = DL+"/"+data;
-                                DL = DL.replace(" ","%20");
-                                Log.v("TAG",DL);
-                                startActivity(new Intent(HomeActivity.this , WebActivity.class).putExtra("LINK","http://drive.google.com/viewerng/viewer?embedded=true&url=http://2d3da987.ngrok.io/"+DL));
+                                localData = localData + "/" + data;
+                                localData = localData.replace(" ", "%20");
+                                if (data.endsWith(".pdf")) {
+                                    startActivity(new Intent(HomeActivity.this, PDFActivity.class).putExtra("LINK", localData));
+                                } else {
+                                    startActivity(new Intent(HomeActivity.this, WebActivity.class).putExtra("LINK", localData));
+                                    Log.v("TAG", localData);
+                                }
                             } else {
-                                mainLink = "http://" + SharedDataHolder.getLink(HomeActivity.this) + ".ngrok.io/index.php";
                                 dirList.add(data);
-                                formPath();
                                 setClickFunction();
                             }
                         }
                     };
+
                     listView.setAdapter(customAdapter);
+
+
                 } catch (JSONException e) {
-                    Toast.makeText(HomeActivity.this, "Downloaded.", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
                 }
-            }
 
-            @Override
-            public Map setParams() {
-                Map map = new HashMap();
-                map.put("link", homeLink);
-                return map;
-            }
-
-            @Override
-            public void onError(String err) {
 
             }
-        }.request(HomeActivity.this, mainLink);
+        }.request(HomeActivity.this, formPath());
 
+    }
+
+
+    String formPath() {
+        String homeLink = serverLink + "/index.php?link=" + GetLinks.homeLink;
+        for (int i = 0; i < dirList.size(); i++) {
+            homeLink = homeLink + dirList.get(i).toString() + "/";
+        }
+        homeLink = homeLink.replace(" ", "%20");
+        return homeLink;
+    }
+
+    @Override
+    public void onBackPressed() {
+        dirList.remove(dirList.size() - 1);
+        setClickFunction();
     }
 
 }

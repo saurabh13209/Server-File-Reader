@@ -17,4 +17,17 @@ public class SharedDataHolder {
         SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName,Context.MODE_PRIVATE);
         return sharedPreferences.getString("LINK","");
     }
+
+    public static String getIp(Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName,Context.MODE_PRIVATE);
+        return sharedPreferences.getString("IP","");
+    }
+
+    public static void saveIP(Context context,String IP){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName,Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("IP",IP);
+        editor.commit();
+    }
+
 }

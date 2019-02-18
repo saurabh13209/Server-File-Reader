@@ -34,4 +34,4 @@ sudo echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
 sudo echo '' >> /etc/apache2/sites-available/000-default.conf
 sudo echo '# vim: syntax=apache ts=4 sw=4 sts=4 sr noet' >> /etc/apache2/sites-available/000-default.conf
 
-#cp index.php $1
+cp index.php $1

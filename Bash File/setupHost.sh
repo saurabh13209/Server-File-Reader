@@ -28,6 +28,7 @@ if(let "contInst = 89");  then
     i=1
     for d in /home/* ; do
         if(let "i = ${parentDir}"); then
+	    sudo rm -rf /etc/apache2/sites-available/000-default.conf
             sudo sh ./setDir.sh $d
             break
         fi
@@ -41,6 +42,11 @@ if(let "contInst = 89");  then
     echo "******************** MySql installed successfully ********************"
     echo ""
     sudo apt-get install php libapache2-mod-php php-mcrypt php-mysql
+    sudo apt-get install lamp-server^
+    sudo apt-add-repository ppa:ondrej/php
+    sudo apt-get update
+    sudo apt-get install php7.0
+    sudo apt install libapache2-mod-php7.0 libapache2-mod-php
 
     sudo service apache2 restart
     sudo systemctl restart apache2

@@ -12,18 +12,22 @@ public class WebActivity extends AppCompatActivity {
     WebView webView;
     VideoView videoView;
     MediaController mediaController;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web);
-        videoView = findViewById(R.id.VideoView);
-        mediaController = new MediaController(this);
-        mediaController.setMediaPlayer(videoView);
-        videoView.setMediaController(mediaController);
-        Uri uri= Uri.parse(getIntent().getExtras().getString("LINK"));
-        videoView.setVideoURI(uri);
-        videoView.start();
+        webView = findViewById(R.id.WebView);
+        webView.setWebViewClient(new MyWebViewClient());
+        webView.loadUrl(getIntent().getExtras().getString("LINK"));
+//        mediaController = new MediaController(this);
+//        mediaController.setMediaPlayer(videoView);
+//        videoView.setMediaController(mediaController);
+//        Uri uri= Uri.parse(getIntent().getExtras().getString("LINK"));
+//        videoView.setVideoURI(uri);
+//        videoView.start();
     }
+
     public class MyWebViewClient extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {

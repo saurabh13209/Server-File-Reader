@@ -8,7 +8,6 @@ import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -16,6 +15,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -55,7 +55,7 @@ public class HomeActivity extends AppCompatActivity {
     public static boolean isIpChanged = false;
     ProgressDialog sharingLoading;
     byte[] byteArray;
-    Bitmap bitmap;
+    SwipeRefreshLayout swipeRefreshLayout;
 
 
     @Override
@@ -85,7 +85,7 @@ public class HomeActivity extends AppCompatActivity {
         floatingActionButton = findViewById(R.id.floatingMain);
         sharingLoading.setTitle("Please wait");
         sharingLoading.setCancelable(false);
-
+        swipeRefreshLayout = findViewById(R.id.homeSwipe);
 
         serverLink = "http://" + SharedDataHolder.getIp(HomeActivity.this);
         setClickFunction();
@@ -104,7 +104,7 @@ public class HomeActivity extends AppCompatActivity {
                 imageSelect.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                         photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                         photoPickerIntent.setType("image/*");
                         startActivityForResult(Intent.createChooser(photoPickerIntent, "Select image "), 1);
@@ -130,6 +130,14 @@ public class HomeActivity extends AppCompatActivity {
                 });
             }
         });
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                setClickFunction();
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
     }
 
     @Override
@@ -147,21 +155,10 @@ public class HomeActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
-                try {
-                    ClipData clipData = data.getClipData();
-                    sharingLoading.setMessage("");
-                    sharingLoading.show();
-                    sendImage(0, clipData);
-                } catch (Exception e) {
-                    try {
-                        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
-                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-                        byteArray = byteArrayOutputStream.toByteArray();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
+                ClipData clipData = data.getClipData();
+                sharingLoading.setMessage("");
+                sharingLoading.show();
+                sendMedia(0, clipData, true);
             }
         }
         if (requestCode == 2) {
@@ -169,13 +166,23 @@ public class HomeActivity extends AppCompatActivity {
                 ClipData clipData = data.getClipData();
                 sharingLoading.setMessage("");
                 sharingLoading.show();
-                sendVideo(0, clipData);
+                sendMedia(0, clipData, false);
             }
         }
 
     }
 
-    void sendVideo(final int index, final ClipData clipData) {
+    void sendMedia(final int index, final ClipData clipData, final boolean type) {
+        // type: true - image;
+        // type: false - video;
+
+        String sendUrl = "http://" + SharedDataHolder.getIp(HomeActivity.this);
+        if (type) {
+            sendUrl = sendUrl + "/imageUpload.php";
+        } else {
+            sendUrl = sendUrl + "/videoUpload.php";
+        }
+
         try {
             int tempIndex = index + 1;
             sharingLoading.setMessage("Sending file " + tempIndex + "/" + clipData.getItemCount());
@@ -193,7 +200,7 @@ public class HomeActivity extends AppCompatActivity {
                 @Override
                 public void getResponse(String res) {
                     if (((m + 1) < clipData.getItemCount())) {
-                        sendVideo(m + 1, clipData);
+                        sendMedia(m + 1, clipData, type);
                     } else {
                         sharingLoading.dismiss();
                     }
@@ -211,7 +218,7 @@ public class HomeActivity extends AppCompatActivity {
                 public void onError(String err) {
                     Toast.makeText(HomeActivity.this, err, Toast.LENGTH_SHORT).show();
                 }
-            }.request(HomeActivity.this, "http://" + SharedDataHolder.getIp(HomeActivity.this) + "/videoUpload.php");
+            }.request(HomeActivity.this, sendUrl);
 
 
         } catch (Exception e) {
@@ -219,45 +226,6 @@ public class HomeActivity extends AppCompatActivity {
         }
 
     }
-
-    void sendImage(final int index, final ClipData clipData) {
-        try {
-            int tempIndex = index + 1;
-            sharingLoading.setMessage("Sending file " + tempIndex + "/" + clipData.getItemCount());
-            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), clipData.getItemAt(index).getUri());
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-            byteArray = byteArrayOutputStream.toByteArray();
-            final int m = index;
-            new PostRequest() {
-                @Override
-                public void getResponse(String res) {
-                    if ((m + 1) < clipData.getItemCount()) {
-                        sendImage(m + 1, clipData);
-                    } else {
-                        sharingLoading.dismiss();
-                    }
-                }
-
-                @Override
-                public Map setParams() {
-                    Map map = new HashMap();
-                    map.put("name", "fileReader" + SharedDataHolder.getFileNumber(HomeActivity.this));
-                    map.put("image", Base64.encodeToString(byteArray, Base64.DEFAULT));
-                    return map;
-                }
-
-                @Override
-                public void onError(String err) {
-                    Toast.makeText(HomeActivity.this, err, Toast.LENGTH_SHORT).show();
-                }
-            }.request(HomeActivity.this, "http://" + SharedDataHolder.getIp(HomeActivity.this) + "/imageUpload.php");
-
-        } catch (IOException e) {
-            Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show();
-        }
-    }
-
 
     public String getPath(Uri uri) {
         String[] projection = {MediaStore.Video.Media.DATA};

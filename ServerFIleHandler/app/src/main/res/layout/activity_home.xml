@@ -13,12 +13,18 @@
         android:id="@+id/HomeTool"
         android:background="@color/colorPrimary"/>
 
-    <ListView
-        android:layout_below="@id/HomeTool"
-        android:id="@+id/HomeList"
+    <android.support.v4.widget.SwipeRefreshLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:dividerHeight="5dp" />
+        android:id="@+id/homeSwipe"
+        android:layout_below="@id/HomeTool">
+        <ListView
+            android:id="@+id/HomeList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:dividerHeight="5dp" />
+    </android.support.v4.widget.SwipeRefreshLayout>
+
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/floatingMain"

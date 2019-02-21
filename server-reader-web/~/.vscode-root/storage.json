@@ -1,0 +1,32 @@
+{
+    "telemetry.machineId": "dbaff5656d04cfa1b62588c07f9b15e9d8dce48a50d14cae3e8d6d11285bc13f",
+    "theme": "vs-dark",
+    "themeBackground": "#1e1e1e",
+    "pickerWorkingDir": "/home/saurabh/AndroidStudioProjects/ServerFIle",
+    "openedPathsList": {
+        "workspaces2": [
+            "file:///home/saurabh/AndroidStudioProjects/ServerFIle/server-reader-web"
+        ],
+        "files2": []
+    },
+    "windowsState": {
+        "openedWindows": [],
+        "lastActiveWindow": {
+            "folderUri": {
+                "$mid": 1,
+                "fsPath": "/home/saurabh/AndroidStudioProjects/ServerFIle/server-reader-web",
+                "external": "file:///home/saurabh/AndroidStudioProjects/ServerFIle/server-reader-web",
+                "path": "/home/saurabh/AndroidStudioProjects/ServerFIle/server-reader-web",
+                "scheme": "file"
+            },
+            "backupPath": "/home/saurabh/AndroidStudioProjects/ServerFIle/server-reader-web/~/.vscode-root/Backups/aacf7e51aea78a1f205a4f9613828cd1",
+            "uiState": {
+                "mode": 0,
+                "x": 0,
+                "y": 27,
+                "width": 1366,
+                "height": 696
+            }
+        }
+    }
+}

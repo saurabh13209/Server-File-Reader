@@ -30,4 +30,20 @@ public class SharedDataHolder {
         editor.commit();
     }
 
+    public static int getFileNumber(Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName,Context.MODE_PRIVATE);
+        String n = sharedPreferences.getString("FileNumber","");
+        if (n.equals("")){
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("FileNumber",1+"");
+            editor.commit();
+            return 0;
+        }else {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("FileNumber",String.valueOf(Integer.valueOf(n)+1));
+            editor.commit();
+            return Integer.valueOf(n);
+        }
+    }
+
 }

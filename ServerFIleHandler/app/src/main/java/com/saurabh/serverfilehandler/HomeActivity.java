@@ -2,17 +2,20 @@ package com.saurabh.serverfilehandler;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -22,11 +25,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.android.volley.toolbox.StringRequest;
 import com.saurabh.volleyhelper.GetRequest;
 import com.saurabh.volleyhelper.PostRequest;
 
@@ -34,12 +37,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 
 public class HomeActivity extends AppCompatActivity {
@@ -51,6 +53,10 @@ public class HomeActivity extends AppCompatActivity {
     String serverLink;
     FloatingActionButton floatingActionButton;
     public static boolean isIpChanged = false;
+    ProgressDialog sharingLoading;
+    byte[] byteArray;
+    Bitmap bitmap;
+
 
     @Override
     protected void onResume() {
@@ -74,8 +80,12 @@ public class HomeActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressHome);
         toolbar = findViewById(R.id.HomeTool);
         setSupportActionBar(toolbar);
+        sharingLoading = new ProgressDialog(HomeActivity.this);
         toolbar.setTitleTextColor(getResources().getColor(R.color.white));
         floatingActionButton = findViewById(R.id.floatingMain);
+        sharingLoading.setTitle("Please wait");
+        sharingLoading.setCancelable(false);
+
 
         serverLink = "http://" + SharedDataHolder.getIp(HomeActivity.this);
         setClickFunction();
@@ -83,28 +93,68 @@ public class HomeActivity extends AppCompatActivity {
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
-                photoPickerIntent.setType("image/*");
-                photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                startActivityForResult(Intent.createChooser(photoPickerIntent, "Select image "), 1);
+                AlertDialog.Builder builder = new AlertDialog.Builder(HomeActivity.this);
+                View view = getLayoutInflater().inflate(R.layout.upload_menu, null);
+                builder.setView(view);
+                LinearLayout imageSelect = view.findViewById(R.id.imageSelectView);
+                LinearLayout videoSelect = view.findViewById(R.id.videoSelectView);
+                final AlertDialog alertDialog = builder.create();
+                alertDialog.show();
+
+                imageSelect.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                        photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                        photoPickerIntent.setType("image/*");
+                        startActivityForResult(Intent.createChooser(photoPickerIntent, "Select image "), 1);
+                        alertDialog.dismiss();
+                    }
+                });
+
+                videoSelect.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                            alertDialog.dismiss();
+                            ActivityCompat.requestPermissions(HomeActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 152);
+                        } else {
+                            Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                            photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                            photoPickerIntent.setType("video/*");
+                            startActivityForResult(Intent.createChooser(photoPickerIntent, "Select image "), 2);
+                            alertDialog.dismiss();
+                        }
+
+                    }
+                });
             }
         });
     }
 
-
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case 152:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
+                }
+        }
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1)
+        if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
-                try{
+                try {
                     ClipData clipData = data.getClipData();
-                    int indexMain = 0;
-                    sendImage(indexMain,clipData);
-                }catch (Exception e){
+                    sharingLoading.setMessage("");
+                    sharingLoading.show();
+                    sendImage(0, clipData);
+                } catch (Exception e) {
                     try {
-                        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData() );
+                        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), data.getData());
                         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
                         byteArray = byteArrayOutputStream.toByteArray();
@@ -112,15 +162,68 @@ public class HomeActivity extends AppCompatActivity {
                         e1.printStackTrace();
                     }
                 }
-
-            } else {
             }
-
+        }
+        if (requestCode == 2) {
+            if (resultCode == RESULT_OK) {
+                ClipData clipData = data.getClipData();
+                sharingLoading.setMessage("");
+                sharingLoading.show();
+                sendVideo(0, clipData);
+            }
+        }
 
     }
 
-    void sendImage(int index , final ClipData clipData){
+    void sendVideo(final int index, final ClipData clipData) {
         try {
+            int tempIndex = index + 1;
+            sharingLoading.setMessage("Sending file " + tempIndex + "/" + clipData.getItemCount());
+            FileInputStream fis = new FileInputStream(getPath(clipData.getItemAt(index).getUri()));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] b = new byte[1024];
+            for (int readNum; (readNum = fis.read(b)) != -1; ) {
+                bos.write(b, 0, readNum);
+            }
+            byteArray = bos.toByteArray();
+
+
+            final int m = index;
+            new PostRequest() {
+                @Override
+                public void getResponse(String res) {
+                    if (((m + 1) < clipData.getItemCount())) {
+                        sendVideo(m + 1, clipData);
+                    } else {
+                        sharingLoading.dismiss();
+                    }
+                }
+
+                @Override
+                public Map setParams() {
+                    Map map = new HashMap();
+                    map.put("name", "fileReader" + SharedDataHolder.getFileNumber(HomeActivity.this));
+                    map.put("image", Base64.encodeToString(byteArray, Base64.DEFAULT));
+                    return map;
+                }
+
+                @Override
+                public void onError(String err) {
+                    Toast.makeText(HomeActivity.this, err, Toast.LENGTH_SHORT).show();
+                }
+            }.request(HomeActivity.this, "http://" + SharedDataHolder.getIp(HomeActivity.this) + "/videoUpload.php");
+
+
+        } catch (Exception e) {
+            Log.v("TAG", e.toString());
+        }
+
+    }
+
+    void sendImage(final int index, final ClipData clipData) {
+        try {
+            int tempIndex = index + 1;
+            sharingLoading.setMessage("Sending file " + tempIndex + "/" + clipData.getItemCount());
             bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), clipData.getItemAt(index).getUri());
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
@@ -129,15 +232,17 @@ public class HomeActivity extends AppCompatActivity {
             new PostRequest() {
                 @Override
                 public void getResponse(String res) {
-                    if ((m+1)<clipData.getItemCount()){
-                        sendImage(m+1,clipData);
+                    if ((m + 1) < clipData.getItemCount()) {
+                        sendImage(m + 1, clipData);
+                    } else {
+                        sharingLoading.dismiss();
                     }
                 }
 
                 @Override
                 public Map setParams() {
                     Map map = new HashMap();
-                    map.put("name", "fileReader" + new Random().nextInt(10000));
+                    map.put("name", "fileReader" + SharedDataHolder.getFileNumber(HomeActivity.this));
                     map.put("image", Base64.encodeToString(byteArray, Base64.DEFAULT));
                     return map;
                 }
@@ -153,8 +258,17 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    byte[] byteArray;
-    Bitmap bitmap;
+
+    public String getPath(Uri uri) {
+        String[] projection = {MediaStore.Video.Media.DATA};
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if (cursor != null) {
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } else
+            return null;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -167,12 +281,8 @@ public class HomeActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         switch (id) {
-            case R.id.CreateFile:
-                break;
             case R.id.Setting:
                 startActivity(new Intent(HomeActivity.this, SettingActivity.class));
-                break;
-            case R.id.CraeteFolder:
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -235,7 +345,7 @@ public class HomeActivity extends AppCompatActivity {
 
 
     String formPath() {
-        String homeLink = serverLink + "/index.php?link=" + GetLinks.homeLink;
+        String homeLink = serverLink + "/index.php?link=/home/saurabh/";
         for (int i = 0; i < dirList.size(); i++) {
             homeLink = homeLink + dirList.get(i).toString() + "/";
         }

@@ -25,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -38,6 +39,7 @@ import org.json.JSONException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,7 +75,7 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         listView = findViewById(R.id.HomeList);
         FolderList = new ArrayList();
         dirList = new ArrayList();
@@ -97,7 +99,7 @@ public class HomeActivity extends AppCompatActivity {
                 View view = getLayoutInflater().inflate(R.layout.upload_menu, null);
                 builder.setView(view);
                 LinearLayout imageSelect = view.findViewById(R.id.imageSelectView);
-                LinearLayout videoSelect = view.findViewById(R.id.videoSelectView);
+                LinearLayout audioSelect = view.findViewById(R.id.audioSelectView);
                 final AlertDialog alertDialog = builder.create();
                 alertDialog.show();
 
@@ -106,26 +108,26 @@ public class HomeActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
                         photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                        photoPickerIntent.setType("image/*");
-                        startActivityForResult(Intent.createChooser(photoPickerIntent, "Select image "), 1);
+                        photoPickerIntent.setType("*/*");
+                        startActivityForResult(Intent.createChooser(photoPickerIntent, "Select media "), 1);
                         alertDialog.dismiss();
                     }
                 });
 
-                videoSelect.setOnClickListener(new View.OnClickListener() {
+
+                audioSelect.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                             alertDialog.dismiss();
                             ActivityCompat.requestPermissions(HomeActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 152);
                         } else {
-                            Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                            Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
                             photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                            photoPickerIntent.setType("video/*");
-                            startActivityForResult(Intent.createChooser(photoPickerIntent, "Select image "), 2);
+                            photoPickerIntent.setType("audio/*");
+                            startActivityForResult(Intent.createChooser(photoPickerIntent, "Select image "), 3);
                             alertDialog.dismiss();
                         }
-
                     }
                 });
             }
@@ -158,35 +160,78 @@ public class HomeActivity extends AppCompatActivity {
                 ClipData clipData = data.getClipData();
                 sharingLoading.setMessage("");
                 sharingLoading.show();
-                sendMedia(0, clipData, true);
+                sendMedia(0, clipData);
             }
         }
-        if (requestCode == 2) {
-            if (resultCode == RESULT_OK) {
-                ClipData clipData = data.getClipData();
-                sharingLoading.setMessage("");
-                sharingLoading.show();
-                sendMedia(0, clipData, false);
-            }
+        if (requestCode == 3) {
+            ClipData clipData = data.getClipData();
+            sharingLoading.setMessage("");
+            sharingLoading.show();
+            String s = "/storage/emulated/0/" + clipData.getItemAt(0).getUri().getLastPathSegment().substring(8);
+            sendAudio(0, s, clipData);
         }
 
     }
 
-    void sendMedia(final int index, final ClipData clipData, final boolean type) {
+    void sendAudio(final int index, String s, final ClipData clipData) {
+        FileInputStream fis = null;
+        sharingLoading.setMessage("");
+        int tempIndex = index + 1;
+        try {
+            sharingLoading.setMessage("Sending file " + tempIndex + "/" + clipData.getItemCount());
+            fis = new FileInputStream(s);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] b = new byte[1024];
+            for (int readNum; (readNum = fis.read(b)) != -1; ) {
+                bos.write(b, 0, readNum);
+            }
+            byteArray = bos.toByteArray();
+            new PostRequest() {
+                @Override
+                public void getResponse(String res) {
+                    Log.v("TAG", res);
+                    if (((index + 1) < clipData.getItemCount())) {
+                        String s = "/storage/emulated/0/" + clipData.getItemAt(index + 1).getUri().getLastPathSegment().substring(8);
+                        sendAudio(index + 1, s, clipData);
+                    } else {
+                        sharingLoading.dismiss();
+                    }
+                }
+
+                @Override
+                public Map setParams() {
+                    Map map = new HashMap();
+                    map.put("name", "fileReader" + SharedDataHolder.getFileNumber(HomeActivity.this));
+                    map.put("image", Base64.encodeToString(byteArray, Base64.DEFAULT));
+                    Log.v("TAG", "d");
+                    return map;
+                }
+
+                @Override
+                public void onError(String err) {
+                    Toast.makeText(HomeActivity.this, "Something went wrong..", Toast.LENGTH_SHORT).show();
+                }
+            }.request(HomeActivity.this, "http://" + SharedDataHolder.getIp(HomeActivity.this) + "/audioUpload.php");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    void sendMedia(final int index, final ClipData clipData) {
         // type: true - image;
         // type: false - video;
 
-        String sendUrl = "http://" + SharedDataHolder.getIp(HomeActivity.this);
-        if (type) {
-            sendUrl = sendUrl + "/imageUpload.php";
-        } else {
-            sendUrl = sendUrl + "/videoUpload.php";
-        }
+        String sendUrl = "http://" + SharedDataHolder.getIp(HomeActivity.this)+"/mediaUpload.php";
 
         try {
             int tempIndex = index + 1;
             sharingLoading.setMessage("Sending file " + tempIndex + "/" + clipData.getItemCount());
             FileInputStream fis = new FileInputStream(getPath(clipData.getItemAt(index).getUri()));
+            Log.v("TAG", getPath(clipData.getItemAt(index).getUri()));
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             byte[] b = new byte[1024];
             for (int readNum; (readNum = fis.read(b)) != -1; ) {
@@ -199,8 +244,9 @@ public class HomeActivity extends AppCompatActivity {
             new PostRequest() {
                 @Override
                 public void getResponse(String res) {
+                    Log.v("TAG", res);
                     if (((m + 1) < clipData.getItemCount())) {
-                        sendMedia(m + 1, clipData, type);
+                        sendMedia(m + 1, clipData);
                     } else {
                         sharingLoading.dismiss();
                     }
@@ -224,7 +270,6 @@ public class HomeActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.v("TAG", e.toString());
         }
-
     }
 
     public String getPath(Uri uri) {

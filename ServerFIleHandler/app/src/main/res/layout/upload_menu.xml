@@ -29,7 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Image"
+            android:text="Image / Video"
             android:id="@+id/MenuText"
             android:textColor="@android:color/black"
             android:textSize="25sp"
@@ -38,7 +38,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/videoSelectView"
+        android:id="@+id/audioSelectView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp">
@@ -52,7 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Video"
+            android:text="Audio"
             android:textColor="@android:color/black"
             android:textSize="25sp"
             android:gravity="center_vertical"

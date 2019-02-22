@@ -1,5 +1,4 @@
 <?php
-//$dir = $_GET["path"];
 $dir = $_GET['link'];
 $a = scandir($dir);
 $i=2;

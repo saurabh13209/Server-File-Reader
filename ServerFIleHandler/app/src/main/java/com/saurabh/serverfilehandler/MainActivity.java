@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
             ConnectButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    SharedDataHolder.saveLink(MainActivity.this,editText.getText().toString());
+                    SharedDataHolder.saveIP(MainActivity.this,editText.getText().toString());
                     startActivity(new Intent(MainActivity.this , HomeActivity.class));
                 }
             });

@@ -1,65 +1,42 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 
 class App extends Component {
-  
-  constructor() {
-    super();
-    this.state = {
-       data: 
-       [
-          {
-             "id":1,
-             "name":"Foo",
-             "age":"20"
-          },
-          {
-             "id":2,
-             "name":"Bar",
-             "age":"30"
-          },
-          {
-             "id":3,
-             "name":"Baz",
-             "age":"40"
-          }
-       ]
-    }
- }
- render() {
-    return (
-       <div>
-          <Header/>
-          <table>
-             <tbody>
-                {this.state.data.map((person, i) => <TableRow key = {i} 
-                   data = {person} />)}
-             </tbody>
-          </table>
-       </div>
-    );
- }
+   
+   sendRequest(path){
+      console.log(path);
+   }
+
+   state={
+      folderList:[
+         "Android",
+         "AndroidStudioProjects",
+         "Home",
+         "Downloads",
+         "Video"
+      ]
+   }
+
+   render(){
+      return(
+         <div className="App">
+            <Player click={this.sendRequest.bind(this,this.state.folderList[0])}>{this.state.folderList[0]}</Player>
+            <Player click={this.sendRequest.bind(this,this.state.folderList[1])}>{this.state.folderList[1]}</Player>
+            <Player click={this.sendRequest.bind(this,this.state.folderList[2])}>{this.state.folderList[2]}</Player>
+            <Player click={this.sendRequest.bind(this,this.state.folderList[3])}>{this.state.folderList[3]}</Player>
+            <Player click={this.sendRequest.bind(this,this.state.folderList[4])}>{this.state.folderList[4]}</Player>
+         </div>
+      )
+   }
 }
-class Header extends React.Component {
- render() {
-    return (
-       <div>
-          <h1>Header</h1>
-       </div>
-    );
- }
-}
-class TableRow extends React.Component {
- render() {
-    return (
-       <tr>
-          <td>{this.props.data.id}</td>
-          <td>{this.props.data.name}</td>
-          <td>{this.props.data.age}</td>
-       </tr>
-    );
- }
-}
+
+const Player = (props) =>{
+      return(
+         <div className="CardView" onClick={props.click}>
+            <p className="FileName">{props.children}</p>
+         </div>
+      )
+   
+};
 
 export default App;

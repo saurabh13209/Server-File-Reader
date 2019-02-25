@@ -14,6 +14,27 @@
         android:layout_margin="20dp"
         android:textColor="@android:color/white" />
 
+
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:textColorHint="@color/colorAccent">
+
+        <EditText
+            android:id="@+id/addName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorAccent"
+            android:hint="Name of Network"
+            android:padding="10dp"
+            android:textColor="@android:color/white"
+            android:textColorHint="@color/colorAccent" />
+
+    </android.support.design.widget.TextInputLayout>
+
+
     <android.support.design.widget.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,7 +46,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/colorAccent"
-            android:hint="Network of IP"
+            android:hint="IP of Network"
             android:padding="10dp"
             android:textColor="@android:color/white"
             android:textColorHint="@color/colorAccent" />

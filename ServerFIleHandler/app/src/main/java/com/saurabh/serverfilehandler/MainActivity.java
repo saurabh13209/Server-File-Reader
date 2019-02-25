@@ -8,13 +8,15 @@ import android.widget.Button;
 import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
+    SqlDatabaseHandler sqlDatabaseHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        sqlDatabaseHandler = new SqlDatabaseHandler(MainActivity.this);
 
-        if (!SharedDataHolder.getLink(MainActivity.this).equals("")){
+        if (sqlDatabaseHandler.getIpCount()>0){
             //todo: check is valid;
             if (true){
                 startActivity(new Intent(MainActivity.this , HomeActivity.class));
@@ -27,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
             ConnectButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    SharedDataHolder.saveIP(MainActivity.this,editText.getText().toString());
+                    sqlDatabaseHandler.SaveData("Name",editText.getText().toString());
                     startActivity(new Intent(MainActivity.this , HomeActivity.class));
                 }
             });

@@ -1,74 +1,109 @@
 package com.saurabh.serverfilehandler;
 
+import android.database.Cursor;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+
 
 public class SettingActivity extends AppCompatActivity {
 
     Toolbar toolbar;
-    EditText Link , Ip;
-    Button button;
-
+    EditText Link;
+    ListView listView;
+    FloatingActionButton floatingActionButton;
+    SqlDatabaseHandler sqlDatabaseHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
 
+        floatingActionButton = findViewById(R.id.SettingFloat);
         toolbar = findViewById(R.id.SettingTool);
         toolbar.setTitleTextColor(getResources().getColor(R.color.white));
         setSupportActionBar(toolbar);
+        sqlDatabaseHandler = new SqlDatabaseHandler(SettingActivity.this);
         getSupportActionBar().setTitle("Settings");
 
-        button = findViewById(R.id.SettingButton);
         Link = findViewById(R.id.LinkAdd);
+        listView = findViewById(R.id.SettingList);
+        listView.setAdapter(new CustomAdapter());
         Link.setText(SharedDataHolder.getLink(SettingActivity.this));
-        setTextWatcher(Link);
 
-        Ip = findViewById(R.id.IpAdd);
-        Ip.setText(SharedDataHolder.getIp(SettingActivity.this));
-        setTextWatcher(Ip);
-
-        button.setOnClickListener(new View.OnClickListener() {
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedDataHolder.saveLink(SettingActivity.this,Link.getText().toString());
-                SharedDataHolder.saveIP(SettingActivity.this,Ip.getText().toString());
-                HomeActivity.isIpChanged = true;
-                finish();
-            }
-        });
+                AlertDialog.Builder builder = new AlertDialog.Builder(SettingActivity.this);
+                View view = getLayoutInflater().inflate(R.layout.add_network, null);
+                builder.setView(view);
+                final AlertDialog alertDialog = builder.create();
+                alertDialog.show();
+                final EditText ip = view.findViewById(R.id.addIp);
+                Button button = view.findViewById(R.id.ipSave);
 
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //SharedDataHolder.saveIP(SettingActivity.this , ip.getText().toString());
+                        sqlDatabaseHandler.SaveData("Ip", ip.getText().toString());
+                        alertDialog.dismiss();
+                    }
+                });
 
-    }
-
-    void setTextWatcher(EditText editText){
-        editText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                makeButtonClickable();
             }
         });
     }
 
-    void makeButtonClickable(){
-        button.setClickable(true);
-        button.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+    private class CustomAdapter extends BaseAdapter {
+
+        @Override
+        public int getCount() {
+            return sqlDatabaseHandler.getIpCount();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return 0;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            convertView = getLayoutInflater().inflate(R.layout.network_each, null);
+            TextView ip = convertView.findViewById(R.id.ipText);
+            TextView networkName = convertView.findViewById(R.id.networkName);
+            CheckBox checkBox = convertView.findViewById(R.id.checkbox);
+            checkBox.setClickable(false);
+            Cursor cursor = sqlDatabaseHandler.getIps();
+            cursor.moveToPosition(position);
+            if (cursor.getString(1).equals(HomeActivity.Ip)) {
+                checkBox.setChecked(true);
+            }
+            networkName.setText(cursor.getString(0));
+            ip.setText(cursor.getString(1));
+            return convertView;
+        }
     }
+
+    @Override
+    public void onBackPressed() {
+        SharedDataHolder.saveLink(SettingActivity.this, Link.getText().toString());
+        super.onBackPressed();
+    }
+
 }

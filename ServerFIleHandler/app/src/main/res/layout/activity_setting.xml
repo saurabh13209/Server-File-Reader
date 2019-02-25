@@ -1,66 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/Background"
-    tools:context=".SettingActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context=".SettingActivity">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/SettingTool"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#333"
-        android:layout_marginBottom="30dp"/>
+        android:background="#333" />
 
-    <android.support.design.widget.TextInputLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:textColorHint="@color/colorAccent">
+        android:layout_below="@id/SettingTool"
+        android:layout_marginTop="30dp"
+        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/LinkAdd"
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Global link"
-            android:textColor="@android:color/white"
-            android:backgroundTint="@color/colorAccent"
-            android:textColorHint="@color/colorAccent"/>
+            android:layout_margin="10dp"
+            android:textColorHint="@color/colorAccent">
 
-    </android.support.design.widget.TextInputLayout>
+            <EditText
+                android:id="@+id/LinkAdd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/colorAccent"
+                android:hint="Global link"
+                android:textColor="@android:color/white"
+                android:textColorHint="@color/colorAccent" />
 
-    <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:textColorHint="@color/colorAccent">
+        </android.support.design.widget.TextInputLayout>
 
-        <EditText
-            android:id="@+id/IpAdd"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="IP Address"
+            android:text="Local Network"
+            android:textAlignment="center"
             android:textColor="@android:color/white"
-            android:backgroundTint="@color/colorAccent"
-            android:textColorHint="@color/colorAccent"/>
+            android:textSize="25sp" />
 
-    </android.support.design.widget.TextInputLayout>
+        <ListView
+            android:id="@+id/SettingList"
+            android:dividerHeight="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/SettingButton"
-        android:layout_width="match_parent"
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/SettingFloat"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:background="@android:color/darker_gray"
-        android:text="Save"
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        android:textAllCaps="false"
-        android:clickable="false"
-        android:foreground="?selectableItemBackground"
-        />
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="30dp"
+        android:src="@drawable/ic_add_black_24dp"
+        android:tint="@android:color/white" />
 
-</LinearLayout>
+
+</RelativeLayout>

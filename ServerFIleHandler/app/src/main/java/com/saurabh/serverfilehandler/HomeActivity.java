@@ -53,20 +53,22 @@ public class HomeActivity extends AppCompatActivity {
     ProgressBar progressBar;
     Toolbar toolbar;
     String serverLink;
-    FloatingActionButton floatingActionButton;
+    public static String Ip = "";
     public static boolean isIpChanged = false;
+    FloatingActionButton floatingActionButton;
     ProgressDialog sharingLoading;
     byte[] byteArray;
     SwipeRefreshLayout swipeRefreshLayout;
+    SqlDatabaseHandler sqlDatabaseHandler;
 
 
     @Override
     protected void onResume() {
         if (isIpChanged) {
-            serverLink = "http://" + SharedDataHolder.getIp(HomeActivity.this);
             isIpChanged = false;
             setClickFunction();
         }
+
         super.onResume();
     }
 
@@ -82,6 +84,7 @@ public class HomeActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressHome);
         toolbar = findViewById(R.id.HomeTool);
         setSupportActionBar(toolbar);
+        sqlDatabaseHandler = new SqlDatabaseHandler(HomeActivity.this);
         sharingLoading = new ProgressDialog(HomeActivity.this);
         toolbar.setTitleTextColor(getResources().getColor(R.color.white));
         floatingActionButton = findViewById(R.id.floatingMain);
@@ -89,7 +92,9 @@ public class HomeActivity extends AppCompatActivity {
         sharingLoading.setCancelable(false);
         swipeRefreshLayout = findViewById(R.id.homeSwipe);
 
-        serverLink = "http://" + SharedDataHolder.getIp(HomeActivity.this);
+        setIpCheck(0);
+
+        serverLink = "http://" + Ip;
         setClickFunction();
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
@@ -106,11 +111,16 @@ public class HomeActivity extends AppCompatActivity {
                 imageSelect.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                        photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-                        photoPickerIntent.setType("*/*");
-                        startActivityForResult(Intent.createChooser(photoPickerIntent, "Select media "), 1);
-                        alertDialog.dismiss();
+                        if (ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                            alertDialog.dismiss();
+                            ActivityCompat.requestPermissions(HomeActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 152);
+                        } else {
+                            Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+                            photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                            photoPickerIntent.setType("*/*");
+                            startActivityForResult(Intent.createChooser(photoPickerIntent, "Select media "), 1);
+                            alertDialog.dismiss();
+                        }
                     }
                 });
 
@@ -140,6 +150,40 @@ public class HomeActivity extends AppCompatActivity {
                 swipeRefreshLayout.setRefreshing(false);
             }
         });
+    }
+
+
+    private void setIpCheck(final int index) {
+        final Cursor cursor = sqlDatabaseHandler.getIps();
+        cursor.moveToPosition(index);
+        Log.v("TAG", cursor.getString(1));
+        new PostRequest() {
+            @Override
+            public void getResponse(String res) {
+                Cursor cursor1 = sqlDatabaseHandler.getIps();
+                cursor1.moveToPosition(index);
+                Ip = cursor1.getString(1);
+                Toast.makeText(HomeActivity.this, "" + Ip, Toast.LENGTH_SHORT).show();
+                serverLink = "http://" + Ip;
+                setClickFunction();
+            }
+
+            @Override
+            public Map setParams() {
+                return null;
+            }
+
+            @Override
+            public void onError(String err) {
+                Log.v("TAG", err);
+                Log.v("TAG", "http://" + cursor.getString(1));
+                if (index + 1 < sqlDatabaseHandler.getIpCount()) {
+                    setIpCheck(index + 1);
+                } else {
+                    Toast.makeText(HomeActivity.this, "No network found", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }.request(HomeActivity.this, "http://" + cursor.getString(1));
     }
 
     @Override
@@ -177,6 +221,8 @@ public class HomeActivity extends AppCompatActivity {
         FileInputStream fis = null;
         sharingLoading.setMessage("");
         int tempIndex = index + 1;
+
+
         try {
             sharingLoading.setMessage("Sending file " + tempIndex + "/" + clipData.getItemCount());
             fis = new FileInputStream(s);
@@ -211,7 +257,7 @@ public class HomeActivity extends AppCompatActivity {
                 public void onError(String err) {
                     Toast.makeText(HomeActivity.this, "Something went wrong..", Toast.LENGTH_SHORT).show();
                 }
-            }.request(HomeActivity.this, "http://" + SharedDataHolder.getIp(HomeActivity.this) + "/audioUpload.php");
+            }.request(HomeActivity.this, "http://" + Ip + "/audioUpload.php");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -225,13 +271,12 @@ public class HomeActivity extends AppCompatActivity {
         // type: true - image;
         // type: false - video;
 
-        String sendUrl = "http://" + SharedDataHolder.getIp(HomeActivity.this)+"/mediaUpload.php";
+        String sendUrl = serverLink + "/mediaUpload.php";
 
         try {
             int tempIndex = index + 1;
             sharingLoading.setMessage("Sending file " + tempIndex + "/" + clipData.getItemCount());
             FileInputStream fis = new FileInputStream(getPath(clipData.getItemAt(index).getUri()));
-            Log.v("TAG", getPath(clipData.getItemAt(index).getUri()));
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             byte[] b = new byte[1024];
             for (int readNum; (readNum = fis.read(b)) != -1; ) {
@@ -244,7 +289,6 @@ public class HomeActivity extends AppCompatActivity {
             new PostRequest() {
                 @Override
                 public void getResponse(String res) {
-                    Log.v("TAG", res);
                     if (((m + 1) < clipData.getItemCount())) {
                         sendMedia(m + 1, clipData);
                     } else {

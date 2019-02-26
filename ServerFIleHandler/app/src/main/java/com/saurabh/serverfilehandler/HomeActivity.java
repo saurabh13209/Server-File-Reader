@@ -162,6 +162,7 @@ public class HomeActivity extends AppCompatActivity {
                                     .withActivity(HomeActivity.this)
                                     .withRequestCode(120)
                                     .start();
+                            alertDialog.dismiss();
                         }
                     }
                 });
@@ -348,7 +349,7 @@ public class HomeActivity extends AppCompatActivity {
 
 
     void sendMedia(final int index, final ClipData clipData) {
-        String sendUrl = serverLink + "/upload.php";
+        String sendUrl = serverLink + "/mediaUpload.php";
 
         try {
             int tempIndex = index + 1;

@@ -26,11 +26,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.MimeTypeMap;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.nbsp.materialfilepicker.MaterialFilePicker;
+import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 import com.saurabh.volleyhelper.GetRequest;
 import com.saurabh.volleyhelper.PostRequest;
 
@@ -38,12 +41,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 
 public class HomeActivity extends AppCompatActivity {
@@ -66,9 +77,8 @@ public class HomeActivity extends AppCompatActivity {
     protected void onResume() {
         if (isIpChanged) {
             isIpChanged = false;
-            setClickFunction();
+            setIpCheck(0);
         }
-
         super.onResume();
     }
 
@@ -105,6 +115,7 @@ public class HomeActivity extends AppCompatActivity {
                 builder.setView(view);
                 LinearLayout imageSelect = view.findViewById(R.id.imageSelectView);
                 LinearLayout audioSelect = view.findViewById(R.id.audioSelectView);
+                LinearLayout bigSelect = view.findViewById(R.id.bigSelectView);
                 final AlertDialog alertDialog = builder.create();
                 alertDialog.show();
 
@@ -140,6 +151,21 @@ public class HomeActivity extends AppCompatActivity {
                         }
                     }
                 });
+
+                bigSelect.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (ContextCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(HomeActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 152);
+                        } else {
+                            new MaterialFilePicker()
+                                    .withActivity(HomeActivity.this)
+                                    .withRequestCode(120)
+                                    .start();
+                        }
+                    }
+                });
+
             }
         });
 
@@ -155,6 +181,10 @@ public class HomeActivity extends AppCompatActivity {
 
     private void setIpCheck(final int index) {
         final Cursor cursor = sqlDatabaseHandler.getIps();
+        if (cursor.getCount()==0 || cursor==null){
+            Toast.makeText(this, "Please add network in Settings", Toast.LENGTH_SHORT).show();
+            return;
+        }
         cursor.moveToPosition(index);
         Log.v("TAG", cursor.getString(1));
         new PostRequest() {
@@ -187,7 +217,8 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         switch (requestCode) {
             case 152:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -197,7 +228,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
@@ -215,6 +246,55 @@ public class HomeActivity extends AppCompatActivity {
             sendAudio(0, s, clipData);
         }
 
+        if (requestCode == 120 && resultCode == RESULT_OK) {
+
+            sharingLoading.setMessage("Loading");
+            sharingLoading.show();
+            ;
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    File f = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
+                    String content_type = getMimeType(f.getPath());
+
+                    String file_path_2 = f.getAbsolutePath();
+                    OkHttpClient client = new OkHttpClient();
+                    RequestBody file_body = RequestBody.create(MediaType.parse(content_type), f);
+
+                    RequestBody requestBody = new MultipartBody.Builder()
+                            .setType(MultipartBody.FORM)
+                            .addFormDataPart("type", content_type)
+                            .addFormDataPart("uploaded_file", file_path_2.substring(file_path_2.lastIndexOf("/") + 1), file_body)
+                            .build();
+
+                    Request request = new Request.Builder()
+                            .url(serverLink + "/upload.php")
+                            .post(requestBody)
+                            .build();
+
+                    try {
+                        Response response = client.newCall(request).execute();
+                        if (!response.isSuccessful()) {
+                            Toast.makeText(HomeActivity.this, "Wrong", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.v("TAG", response.message().toString());
+                            sharingLoading.dismiss();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            thread.start();
+
+        }
+
+    }
+
+    private String getMimeType(String path) {
+        String extension = MimeTypeMap.getFileExtensionFromUrl(path);
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
     }
 
     void sendAudio(final int index, String s, final ClipData clipData) {
@@ -268,10 +348,7 @@ public class HomeActivity extends AppCompatActivity {
 
 
     void sendMedia(final int index, final ClipData clipData) {
-        // type: true - image;
-        // type: false - video;
-
-        String sendUrl = serverLink + "/mediaUpload.php";
+        String sendUrl = serverLink + "/upload.php";
 
         try {
             int tempIndex = index + 1;
@@ -402,7 +479,7 @@ public class HomeActivity extends AppCompatActivity {
 
 
     String formPath() {
-        String homeLink = serverLink + "/index.php?link=/home/saurabh/";
+        String homeLink = serverLink + "/index.php?link=/home/" + SharedDataHolder.getHomeDir(HomeActivity.this) + "/";
         for (int i = 0; i < dirList.size(); i++) {
             homeLink = homeLink + dirList.get(i).toString() + "/";
         }

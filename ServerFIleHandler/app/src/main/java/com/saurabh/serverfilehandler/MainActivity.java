@@ -14,27 +14,29 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        sqlDatabaseHandler = new SqlDatabaseHandler(MainActivity.this);
+//        sqlDatabaseHandler = new SqlDatabaseHandler(MainActivity.this);
+//
+//        if (sqlDatabaseHandler.getIpCount()>0){
+//            //todo: check is valid;
+//            if (true){
+//                startActivity(new Intent(MainActivity.this , HomeActivity.class));
+//                finish();
+//            }
+//        }else {
+//            Button ConnectButton = findViewById(R.id.ConnectMain);
+//            final EditText editText = findViewById(R.id.LinkEditMain);
+//
+//            ConnectButton.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    sqlDatabaseHandler.SaveData("Name",editText.getText().toString());
+//                    startActivity(new Intent(MainActivity.this , HomeActivity.class));
+//                }
+//            });
+//
+//        }
 
-        if (sqlDatabaseHandler.getIpCount()>0){
-            //todo: check is valid;
-            if (true){
-                startActivity(new Intent(MainActivity.this , HomeActivity.class));
-                finish();
-            }
-        }else {
-            Button ConnectButton = findViewById(R.id.ConnectMain);
-            final EditText editText = findViewById(R.id.LinkEditMain);
-
-            ConnectButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    sqlDatabaseHandler.SaveData("Name",editText.getText().toString());
-                    startActivity(new Intent(MainActivity.this , HomeActivity.class));
-                }
-            });
-
-        }
-
+        startActivity(new Intent(MainActivity.this,HomeActivity.class));
+        finish();
     }
 }

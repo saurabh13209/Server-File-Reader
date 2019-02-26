@@ -51,13 +51,17 @@ public class SettingActivity extends AppCompatActivity {
                 alertDialog.show();
                 final EditText ip = view.findViewById(R.id.addIp);
                 final EditText  name = view.findViewById(R.id.addName);
+                final  EditText home = view.findViewById(R.id.addHomeName);
                 Button button = view.findViewById(R.id.ipSave);
 
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        SharedDataHolder.setHomeDir(SettingActivity.this,home.getText().toString());
                         sqlDatabaseHandler.SaveData(name.getText().toString(), ip.getText().toString());
+                        HomeActivity.isIpChanged = true;
                         alertDialog.dismiss();
+                        finish();
                     }
                 });
 

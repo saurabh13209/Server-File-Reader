@@ -4,7 +4,9 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -65,10 +67,10 @@ import okhttp3.Response;
 
 public class HomeActivity extends AppCompatActivity  implements NavigationView.OnNavigationItemSelectedListener{
     ListView listView;
-    ArrayList FolderList;
-    ArrayList dirList;
+    ArrayList navList;
+    ArrayList gotList;
     ProgressBar progressBar;
-    Toolbar toolbar;
+
     String serverLink;
     public static String Ip = "";
     public static boolean isIpChanged = false;
@@ -105,8 +107,9 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
         navigationView.setNavigationItemSelectedListener(this);
 
         listView = findViewById(R.id.HomeList);
-        FolderList = new ArrayList();
-        dirList = new ArrayList();
+        navList = new ArrayList();
+        gotList = new ArrayList();
+        navList.add("C:");
         progressBar = findViewById(R.id.progressHome);
         sqlDatabaseHandler = new SqlDatabaseHandler(HomeActivity.this);
         sharingLoading = new ProgressDialog(HomeActivity.this);
@@ -119,6 +122,8 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
 
         serverLink = "http://" + Ip;
         setClickFunction();
+        LocalBroadcastManager.getInstance(this).registerReceiver(onNotice, new IntentFilter("Msg"));
+
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -191,6 +196,40 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
             }
         });
     }
+
+    private BroadcastReceiver onNotice= new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String pack = intent.getStringExtra("package");
+            final String title = intent.getStringExtra("title");
+            final String text = intent.getStringExtra("text");
+
+            Log.d("TAG","PACK 208 Home : "+pack);
+
+            new PostRequest() {
+                @Override
+                public void getResponse(String res) {
+
+                }
+
+                @Override
+                public Map setParams() {
+                    Map map = new HashMap();
+                    map.put("Title",title);
+                    map.put("Text",text);
+                    map.put("Pack",pack);
+                    return map;
+                }
+
+                @Override
+                public void onError(String err) {
+                    Toast.makeText(HomeActivity.this, "Notification Error", Toast.LENGTH_SHORT).show();
+                }
+            }.request(HomeActivity.this , "http://" + Ip+ "/noti.php");
+
+        }
+    };
 
 
     private void setIpCheck(final int index) {
@@ -445,24 +484,25 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
             public void getResponse(String res) {
                 listView.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.INVISIBLE);
+                Log.d("TAG",res);
 
-                FolderList = new ArrayList();
+                gotList = new ArrayList();
 
                 try {
                     JSONArray jsonArray = new JSONArray(res);
 
                     for (int i = 0; i < jsonArray.length(); i++) {
-                        FolderList.add(jsonArray.getString(i));
+                        gotList.add(jsonArray.getString(i));
                     }
 
-                    CustomAdapter customAdapter = new CustomAdapter(FolderList, getLayoutInflater(), HomeActivity.this) {
+                    CustomAdapter customAdapter = new CustomAdapter(gotList, getLayoutInflater(), HomeActivity.this) {
                         @Override
                         void OnClick(String data) {
 
                             if (data.contains(".")) {
                                 String localData = serverLink;
-                                for (int i = 0; i < dirList.size(); i++) {
-                                    localData = localData + "/" + dirList.get(i);
+                                for (int i = 0; i < gotList.size(); i++) {
+                                    localData = localData + "/" + gotList.get(i);
                                 }
                                 localData = localData + "/" + data;
                                 localData = localData.replace(" ", "%20");
@@ -472,7 +512,7 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
                                     startActivity(new Intent(HomeActivity.this, WebActivity.class).putExtra("LINK", localData));
                                 }
                             } else {
-                                dirList.add(data);
+                                navList.add(data);
                                 setClickFunction();
                             }
                         }
@@ -482,7 +522,7 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
 
 
                 } catch (JSONException e) {
-                    Toast.makeText(HomeActivity.this, "Kickme", Toast.LENGTH_SHORT).show();
+                    Log.d("TAG",e.toString());
                 }
 
 
@@ -493,9 +533,9 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
 
 
     String formPath() {
-        String homeLink = serverLink + "/index.php?link=/home/" + SharedDataHolder.getHomeDir(HomeActivity.this) + "/";
-        for (int i = 0; i < dirList.size(); i++) {
-            homeLink = homeLink + dirList.get(i).toString() + "/";
+        String homeLink = serverLink + "/index.php?link=";
+        for (int i = 0; i < navList.size(); i++) {
+            homeLink = homeLink + navList.get(i).toString() + "/";
         }
         homeLink = homeLink.replace(" ", "%20");
         return homeLink;
@@ -507,7 +547,7 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            dirList.remove(dirList.size() - 1);
+            navList.remove(navList.size() - 1);
             setClickFunction();
         }
     }

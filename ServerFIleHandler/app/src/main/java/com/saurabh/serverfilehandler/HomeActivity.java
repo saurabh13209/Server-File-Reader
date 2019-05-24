@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -13,9 +14,14 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -57,7 +63,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity  implements NavigationView.OnNavigationItemSelectedListener{
     ListView listView;
     ArrayList FolderList;
     ArrayList dirList;
@@ -88,15 +94,22 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        Toolbar toolbar = findViewById(R.id.HomeTool);
+        setSupportActionBar(toolbar);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+        navigationView.setNavigationItemSelectedListener(this);
+
         listView = findViewById(R.id.HomeList);
         FolderList = new ArrayList();
         dirList = new ArrayList();
         progressBar = findViewById(R.id.progressHome);
-        toolbar = findViewById(R.id.HomeTool);
-        setSupportActionBar(toolbar);
         sqlDatabaseHandler = new SqlDatabaseHandler(HomeActivity.this);
         sharingLoading = new ProgressDialog(HomeActivity.this);
-        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
         floatingActionButton = findViewById(R.id.floatingMain);
         sharingLoading.setTitle("Please wait");
         sharingLoading.setCancelable(false);
@@ -469,7 +482,7 @@ public class HomeActivity extends AppCompatActivity {
 
 
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Toast.makeText(HomeActivity.this, "Kickme", Toast.LENGTH_SHORT).show();
                 }
 
 
@@ -490,8 +503,35 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        dirList.remove(dirList.size() - 1);
-        setClickFunction();
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            dirList.remove(dirList.size() - 1);
+            setClickFunction();
+        }
     }
 
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.nav_home) {
+            // Handle the camera action
+        } else if (id == R.id.nav_gallery) {
+
+        } else if (id == R.id.nav_slideshow) {
+
+        } else if (id == R.id.nav_tools) {
+
+        } else if (id == R.id.nav_share) {
+
+        } else if (id == R.id.nav_send) {
+
+        }
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
 }

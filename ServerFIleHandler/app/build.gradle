@@ -31,4 +31,5 @@ dependencies {
     implementation 'com.uniquestudio:parsingplayer:2.0.6'
     implementation 'com.squareup.okhttp3:okhttp:3.3.1'
     implementation 'com.nbsp:library:1.09'
+    implementation "com.google.android.gms:play-services:6.1.71"
 }

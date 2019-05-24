@@ -54,23 +54,6 @@
     </android.support.design.widget.TextInputLayout>
 
 
-    <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:textColorHint="@color/colorAccent">
-
-        <EditText
-            android:id="@+id/addHomeName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/colorAccent"
-            android:hint="Home Dir"
-            android:padding="10dp"
-            android:textColor="@android:color/white"
-            android:textColorHint="@color/colorAccent" />
-
-    </android.support.design.widget.TextInputLayout>
 
     <Button
         android:id="@+id/ipSave"

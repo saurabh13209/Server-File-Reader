@@ -123,7 +123,6 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
 
         serverLink = "http://" + Ip;
         setClickFunction();
-        LocalBroadcastManager.getInstance(this).registerReceiver(onNotice, new IntentFilter("Msg"));
 
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
@@ -198,59 +197,22 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
         });
     }
 
-    private BroadcastReceiver onNotice= new BroadcastReceiver() {
 
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String pack = intent.getStringExtra("package");
-            final String title = intent.getStringExtra("title");
-            final String text = intent.getStringExtra("text");
-
-            Log.d("TAG","PACK 208 Home : "+pack);
-
-            new PostRequest() {
-                @Override
-                public void getResponse(String res) {
-
-                }
-
-                @Override
-                public Map setParams() {
-                    Map map = new HashMap();
-                    map.put("Title",title);
-                    map.put("Text",text);
-                    map.put("Pack",pack);
-                    return map;
-                }
-
-                @Override
-                public void onError(String err) {
-                    setIpCheck(0);
-                }
-            }.request(HomeActivity.this , "http://" + SharedDataHolder.getMessageLink(HomeActivity.this) + "/noti.php");
-
-        }
-    };
-
-
-    private void setIpCheck(final int index) {
+    public void setIpCheck(final int index) {
         final Cursor cursor = sqlDatabaseHandler.getIps();
         if (cursor.getCount()==0 || cursor==null){
             Toast.makeText(this, "Please add network in Settings", Toast.LENGTH_SHORT).show();
             return;
         }
         cursor.moveToPosition(index);
-        Log.v("TAG", cursor.getString(1));
         new PostRequest() {
             @Override
             public void getResponse(String res) {
                 Cursor cursor1 = sqlDatabaseHandler.getIps();
                 cursor1.moveToPosition(index);
                 Ip = cursor1.getString(1);
-                Toast.makeText(HomeActivity.this, "" + Ip, Toast.LENGTH_SHORT).show();
                 serverLink = "http://" + Ip;
                 SharedDataHolder.saveMessageLink(HomeActivity.this, Ip);
-                Log.d("TAG","IP :"+Ip);
                 setClickFunction();
             }
 
@@ -261,8 +223,6 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
 
             @Override
             public void onError(String err) {
-                Log.v("TAG", err);
-                Log.v("TAG", "http://" + cursor.getString(1));
                 if (index + 1 < sqlDatabaseHandler.getIpCount()) {
                     setIpCheck(index + 1);
                 } else {
@@ -332,7 +292,6 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
                         if (!response.isSuccessful()) {
                             Toast.makeText(HomeActivity.this, "Wrong", Toast.LENGTH_SHORT).show();
                         } else {
-                            Log.v("TAG", response.message().toString());
                             sharingLoading.dismiss();
                         }
                     } catch (IOException e) {
@@ -370,7 +329,6 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
             new PostRequest() {
                 @Override
                 public void getResponse(String res) {
-                    Log.v("TAG", res);
                     if (((index + 1) < clipData.getItemCount())) {
                         String s = "/storage/emulated/0/" + clipData.getItemAt(index + 1).getUri().getLastPathSegment().substring(8);
                         sendAudio(index + 1, s, clipData);
@@ -384,7 +342,6 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
                     Map map = new HashMap();
                     map.put("name", "fileReader" + SharedDataHolder.getFileNumber(HomeActivity.this));
                     map.put("image", Base64.encodeToString(byteArray, Base64.DEFAULT));
-                    Log.v("TAG", "d");
                     return map;
                 }
 
@@ -444,7 +401,6 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
 
 
         } catch (Exception e) {
-            Log.v("TAG", e.toString());
         }
     }
 
@@ -508,7 +464,6 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
                                 if (data.endsWith(".pdf")) {
                                     startActivity(new Intent(HomeActivity.this, PDFActivity.class).putExtra("LINK", localData));
                                 } else {
-                                    Log.d("TAG",localData);
                                     startActivity(new Intent(HomeActivity.this, WebActivity.class).putExtra("LINK", localData));
                                 }
                             } else {
@@ -522,7 +477,6 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
 
 
                 } catch (JSONException e) {
-                    Log.d("TAG",e.toString());
                 }
 
 

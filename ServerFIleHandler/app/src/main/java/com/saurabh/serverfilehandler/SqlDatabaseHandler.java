@@ -20,6 +20,13 @@ public class SqlDatabaseHandler extends SQLiteOpenHelper {
                 "IpName text " +
                 ");";
         db.execSQL(sql);
+
+        String messageTable = "Create table MessageTable(" +
+                "pack Text, " +
+                "title Text," +
+                "txt Text" +
+                ")";
+        db.execSQL(messageTable);
     }
 
     @Override
@@ -33,8 +40,15 @@ public class SqlDatabaseHandler extends SQLiteOpenHelper {
         contentValues.put("IpName",Ip);
         SQLiteDatabase database = getWritableDatabase();
         database.insert("IpSaver",null,contentValues);
-        Log.v("TAG","DOne");
+    }
 
+    public void saveMessage(String pack, String title , String text){
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("pack",pack);
+        contentValues.put("title",title);
+        contentValues.put("txt",text);
+        SQLiteDatabase database = getWritableDatabase();
+        database.insert("MessageTable",null,contentValues);
     }
 
     public int getIpCount(){
@@ -51,9 +65,6 @@ public class SqlDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase database = getReadableDatabase();
         String sql = "select Name, IpName from IpSaver";
         Cursor cursor = database.rawQuery(sql,null);
-        while (cursor.moveToNext()){
-            Log.v("TAG",cursor.getString(0));
-        }
         return cursor;
     }
 }

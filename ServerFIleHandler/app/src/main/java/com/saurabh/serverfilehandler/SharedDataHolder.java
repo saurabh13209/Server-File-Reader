@@ -2,7 +2,6 @@ package com.saurabh.serverfilehandler;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 public class SharedDataHolder {
     public static String DatabaseName = "DatabaseMain";

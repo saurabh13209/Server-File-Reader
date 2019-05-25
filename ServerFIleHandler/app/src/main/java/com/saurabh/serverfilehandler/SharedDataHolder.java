@@ -7,6 +7,18 @@ import android.util.Log;
 public class SharedDataHolder {
     public static String DatabaseName = "DatabaseMain";
 
+    public static void saveMessageLink(Context context, String link){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName,Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("MESSAGE_LINK",link);
+        editor.commit();
+    }
+
+    public static String getMessageLink(Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName,Context.MODE_PRIVATE);
+        return sharedPreferences.getString("MESSAGE_LINK","");
+    }
+
     public static void saveLink(Context context,String Link){
         SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName,Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();

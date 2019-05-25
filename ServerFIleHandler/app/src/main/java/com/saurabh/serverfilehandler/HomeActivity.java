@@ -9,6 +9,7 @@ import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -224,9 +225,9 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
 
                 @Override
                 public void onError(String err) {
-                    Toast.makeText(HomeActivity.this, "Notification Error", Toast.LENGTH_SHORT).show();
+                    setIpCheck(0);
                 }
-            }.request(HomeActivity.this , "http://" + Ip+ "/noti.php");
+            }.request(HomeActivity.this , "http://" + SharedDataHolder.getMessageLink(HomeActivity.this) + "/noti.php");
 
         }
     };
@@ -248,6 +249,8 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
                 Ip = cursor1.getString(1);
                 Toast.makeText(HomeActivity.this, "" + Ip, Toast.LENGTH_SHORT).show();
                 serverLink = "http://" + Ip;
+                SharedDataHolder.saveMessageLink(HomeActivity.this, Ip);
+                Log.d("TAG","IP :"+Ip);
                 setClickFunction();
             }
 
@@ -303,7 +306,6 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
 
             sharingLoading.setMessage("Loading");
             sharingLoading.show();
-            ;
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -484,10 +486,7 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
             public void getResponse(String res) {
                 listView.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.INVISIBLE);
-                Log.d("TAG",res);
-
                 gotList = new ArrayList();
-
                 try {
                     JSONArray jsonArray = new JSONArray(res);
 
@@ -501,14 +500,15 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
 
                             if (data.contains(".")) {
                                 String localData = serverLink;
-                                for (int i = 0; i < gotList.size(); i++) {
-                                    localData = localData + "/" + gotList.get(i);
+                                for (int i = 1; i < navList.size(); i++) {
+                                    localData = localData + "/" + navList.get(i);
                                 }
                                 localData = localData + "/" + data;
                                 localData = localData.replace(" ", "%20");
                                 if (data.endsWith(".pdf")) {
                                     startActivity(new Intent(HomeActivity.this, PDFActivity.class).putExtra("LINK", localData));
                                 } else {
+                                    Log.d("TAG",localData);
                                     startActivity(new Intent(HomeActivity.this, WebActivity.class).putExtra("LINK", localData));
                                 }
                             } else {
@@ -556,18 +556,26 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.nav_home) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_tools) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.desktop) {
+            navList = new ArrayList();
+            navList.add("C:");
+            navList.add("Users");
+            navList.add("Saurabh");
+            navList.add("Desktop");
+            setClickFunction();
+        } else if (id == R.id.download) {
+            navList = new ArrayList();
+            navList.add("C:");
+            navList.add("Users");
+            navList.add("Saurabh");
+            navList.add("Downloads");
+            setClickFunction();
+        } else if (id == R.id.userHome) {
+            navList = new ArrayList();
+            navList.add("C:");
+            navList.add("Users");
+            navList.add("Saurabh");
+            setClickFunction();
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

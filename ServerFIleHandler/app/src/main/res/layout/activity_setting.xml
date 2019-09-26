@@ -21,23 +21,6 @@
         android:layout_marginTop="30dp"
         android:orientation="vertical">
 
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:textColorHint="@color/colorAccent">
-
-            <EditText
-                android:id="@+id/LinkAdd"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/colorAccent"
-                android:hint="Global link"
-                android:textColor="@android:color/white"
-                android:textColorHint="@color/colorAccent" />
-
-        </android.support.design.widget.TextInputLayout>
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -48,9 +31,9 @@
 
         <ListView
             android:id="@+id/SettingList"
-            android:dividerHeight="5dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:dividerHeight="5dp" />
     </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton

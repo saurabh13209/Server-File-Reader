@@ -18,28 +18,23 @@ public class SharedDataHolder {
         return sharedPreferences.getString("MESSAGE_LINK","");
     }
 
-    public static void saveLink(Context context,String Link){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName,Context.MODE_PRIVATE);
+    public static  void setNotificationRun(Context context, boolean isRun){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName , Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("LINK",Link);
-        editor.commit();
+        if (isRun){
+            editor.putString("isRun","1");
+        }else {
+            editor.putString("isRun","0");
+        }
     }
 
-    public static String getLink(Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName,Context.MODE_PRIVATE);
-        return sharedPreferences.getString("LINK","");
-    }
-
-    public static void setHomeDir(Context context, String homeDir){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName,Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("homeDir",homeDir);
-        editor.commit();
-    }
-
-    public static String getHomeDir(Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName,Context.MODE_PRIVATE);
-        return sharedPreferences.getString("homeDir","");
+    public static boolean getNotificationRun(Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(DatabaseName, Context.MODE_PRIVATE);
+        if (sharedPreferences.getString("isRun","").equals("0")){
+            return false;
+        }else {
+            return true;
+        }
     }
 
     public static int getFileNumber(Context context){

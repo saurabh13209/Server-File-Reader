@@ -41,6 +41,9 @@ public class NotificationHandler extends NotificationListenerService {
 
     public void onNotificationPosted(StatusBarNotification sbn) {
 
+        if (!SharedDataHolder.getNotificationRun(getApplicationContext())){
+            return;
+        }
         Bundle extras = sbn.getNotification().extras;
         pack = sbn.getPackageName();
         title = extras.getString("android.title");

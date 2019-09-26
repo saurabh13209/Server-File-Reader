@@ -4,12 +4,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.ClipData;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -20,7 +16,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -462,6 +457,7 @@ public class HomeActivity extends AppCompatActivity  implements NavigationView.O
                                 localData = localData + "/" + data;
                                 localData = localData.replace(" ", "%20");
                                 if (data.endsWith(".pdf")) {
+                                    Log.v("TAG","465 "+localData);
                                     startActivity(new Intent(HomeActivity.this, PDFActivity.class).putExtra("LINK", localData));
                                 } else {
                                     startActivity(new Intent(HomeActivity.this, WebActivity.class).putExtra("LINK", localData));

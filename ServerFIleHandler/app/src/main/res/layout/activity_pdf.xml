@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     tools:context=".PDFActivity">
 
-    <com.github.barteksc.pdfviewer.PDFView
+    <WebView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/PDFView"/>
+        android:id="@+id/webPdf"></WebView>
 </RelativeLayout>

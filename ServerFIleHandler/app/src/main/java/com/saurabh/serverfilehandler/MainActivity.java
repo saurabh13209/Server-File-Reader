@@ -8,7 +8,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
-    SqlDatabaseHandler sqlDatabaseHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

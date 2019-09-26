@@ -19,7 +19,6 @@ import android.widget.TextView;
 public class SettingActivity extends AppCompatActivity {
 
     Toolbar toolbar;
-    EditText Link;
     ListView listView;
     FloatingActionButton floatingActionButton;
     SqlDatabaseHandler sqlDatabaseHandler;
@@ -36,10 +35,8 @@ public class SettingActivity extends AppCompatActivity {
         sqlDatabaseHandler = new SqlDatabaseHandler(SettingActivity.this);
         getSupportActionBar().setTitle("Settings");
 
-        Link = findViewById(R.id.LinkAdd);
         listView = findViewById(R.id.SettingList);
         listView.setAdapter(new CustomAdapter());
-        Link.setText(SharedDataHolder.getLink(SettingActivity.this));
 
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,7 +59,6 @@ public class SettingActivity extends AppCompatActivity {
                         finish();
                     }
                 });
-
             }
         });
     }
@@ -104,8 +100,6 @@ public class SettingActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        SharedDataHolder.saveLink(SettingActivity.this, Link.getText().toString());
         super.onBackPressed();
     }
-
 }

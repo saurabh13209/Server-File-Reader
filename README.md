@@ -15,3 +15,17 @@ With SFR, User can interact with their PC remotely using their smartphone. I hav
 <li><b>PHP:</b> Used to develop APIs which help to fetch list of directories and to upload and download files.</li>
 <li><b>Android:</b> Used to develop native application.</li>
 </ul>
+
+Some images of the Application are:
+
+<h5>Browse Directories</h5>
+<img src="https://github.com/saurabh13209/Server-File-Reader/blob/WSL/Screenshot/Picture1.png" width="900" height="500" />
+
+<h5>Share files</h5>
+<img src="https://github.com/saurabh13209/Server-File-Reader/blob/WSL/Screenshot/upload.png" width="300" height="600" />
+
+<h5>Add IP Address</h5>
+<img src="https://github.com/saurabh13209/Server-File-Reader/blob/WSL/Screenshot/Ip.png" width="300" height="600" />
+
+<h5>Quick Shortcut</h5>
+<img src="https://github.com/saurabh13209/Server-File-Reader/blob/WSL/Screenshot/nav.png" width="300" height="600" />
